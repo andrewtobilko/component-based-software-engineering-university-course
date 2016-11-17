@@ -2,27 +2,24 @@ package com.tobilko;
 
 import com.tobilko.annotation.DeveloperInformation;
 import com.tobilko.entity.Project;
-import com.tobilko.entity.Filter;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
-import com.tobilko.exception.FilterParameterNotSpecified;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.tobilko.event.MyEvent;
+import com.tobilko.event.MyEventTypeProvider;
+import com.tobilko.stuff.ProcessingService;
+import com.tobilko.stuff.TaskViewService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
-import static java.util.stream.Stream.*;
+import static java.util.stream.Collectors.*;
 import static javafx.collections.FXCollections.observableArrayList;
 
 /**
@@ -34,19 +31,20 @@ import static javafx.collections.FXCollections.observableArrayList;
 public class TaskViewProvider implements Initializable {
 
     private @FXML Button filterButton;
+    private @FXML Button sortButton;
     private @FXML ComboBox<String> typeComboBox;
     private @FXML ComboBox<String> projectComboBox;
     private @FXML TableView<Task> table;
     private @FXML Label label;
 
-    private Filter<Project> projectFilter = new Filter<>();
-    private Filter<Task> taskFilter = new Filter<>();
+    private List<Project> projects = new ArrayList<>();
 
-    private List<Project> projects;
+    private TaskViewService service = new TaskViewService();
+    private ProcessingService processingService = new ProcessingService();
 
     public void configure(Stage stage) {
         try {
-            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml")), 500, 500));
+            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml")), 500, 350));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,49 +52,42 @@ public class TaskViewProvider implements Initializable {
     public void configureFilterProcessing() {
         filterButton.setOnAction(e -> {
             if (projectComboBox.getSelectionModel().isEmpty() || typeComboBox.getSelectionModel().isEmpty()) {
-                throw new FilterParameterNotSpecified("Not all filter parameters are specified!");
+                System.out.println("COMPONENT: I'm going to fire the event!");
+                MyEvent event = new MyEvent(MyEventTypeProvider.getEventType());
+                filterButton.fireEvent(event);
             }
 
-            List<Project> projects = projectFilter.filter(this.projects, p -> p.getTitle().equals(projectComboBox.getSelectionModel().getSelectedItem()));
-            List<Task> tasks = taskFilter.filter(projects.get(0).getTasks(), t -> t.getType() == TaskType.getByTitle(typeComboBox.getSelectionModel().getSelectedItem()));
+            List<Project> projects = processingService.getProjectProcessor().filter(this.projects, p -> p.getTitle().equals(projectComboBox.getSelectionModel().getSelectedItem()));
+            List<Task> tasks = processingService.getTaskProcessor().filter(projects.get(0).getTasks(), t -> t.getType() == TaskType.getByTitle(typeComboBox.getSelectionModel().getSelectedItem()));
 
             table.setItems(observableArrayList(tasks));
 
+        });
+    }
+    public void configureSortProcessing() {
+        sortButton.setOnAction(e -> {
+            List<Task> allTasks = projects.stream().flatMap(p -> p.getTasks().stream()).collect(toList());
+
+
+            processingService.getTaskProcessor().sort(allTasks, (t1, t2) -> t1.getTitle().compareTo(t2.getTitle()));
+            table.setItems(observableArrayList(allTasks));
         });
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         configureFilterProcessing();
-        fillDataStructures();
+        configureSortProcessing();
+
         fillComponents();
         displayMetaInformation();
     }
-    private void fillDataStructures() {
-        projects = Arrays.asList(
-                new Project("Project 1", Arrays.asList(
-                        new Task("title task 1.1", "description task 1.1", TaskType.IMPROVEMENT),
-                        new Task("title task 1.2", "description task 1.2", TaskType.BUG),
-                        new Task("title task 1.3", "description task 1.3", TaskType.FEATURE)
-                )),
-                new Project("Project 2", Arrays.asList(
-                        new Task("title task 2.1", "description task 2.1", TaskType.BUG),
-                        new Task("title task 2.2", "description task 2.2", TaskType.IMPROVEMENT),
-                        new Task("title task 2.3", "description task 2.3", TaskType.FEATURE)
-                )),
-                new Project("Project 3", Arrays.asList(
-                        new Task("title task 3.1", "description task 3.1", TaskType.BUG),
-                        new Task("title task 3.2", "description task 3.2", TaskType.IMPROVEMENT),
-                        new Task("title task 3.3", "description task 3.3", TaskType.FEATURE)
-                ))
-        );
-    }
     private void fillComponents() {
-        typeComboBox.setItems(observableArrayList(of(TaskType.values()).map(TaskType::toString).toArray(String[]::new)));
-        projectComboBox.setItems(observableArrayList(projects.stream().map(Project::getTitle).toArray(String[]::new)));
-        table.setItems(observableArrayList(projects.stream().flatMap(p -> p.getTasks().stream()).toArray(Task[]::new)));
+        service.fillProjects(projects);
+        service.fillTypeComboBox(typeComboBox);
+        service.fillProjectComboBox(projectComboBox, projects);
+        service.fillTable(table, projects);
     }
-
     private void displayMetaInformation() {
         Class<TaskViewProvider> clazz = TaskViewProvider.class;
         if (clazz.isAnnotationPresent(DeveloperInformation.class)) {

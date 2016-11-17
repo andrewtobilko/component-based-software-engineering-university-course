@@ -11,12 +11,13 @@
 <BorderPane fx:controller="com.tobilko.TaskViewProvider"
             xmlns:fx="http://javafx.com/fxml">
     <HBox>
-        <ComboBox layoutX="10" layoutY="10" fx:id="typeComboBox"></ComboBox>
-        <ComboBox layoutX="10" layoutY="100" fx:id="projectComboBox"></ComboBox>
-        <Button fx:id="filterButton" prefWidth="200" text="Filter!"></Button>
+        <ComboBox layoutX="10" layoutY="10" minWidth="100" fx:id="typeComboBox"></ComboBox>
+        <ComboBox layoutX="10" layoutY="100" minWidth="100" fx:id="projectComboBox"></ComboBox>
+        <Button fx:id="filterButton" minWidth="150" text="Filter!"></Button>
+        <Button fx:id="sortButton" minWidth="150" text="Sort by task title!"></Button>
     </HBox>
-    <HBox layoutX="0" layoutY="100" minWidth="500" prefWidth="500" prefHeight="300" minHeight="300">
-        <TableView fx:id="table" minWidth="500" prefWidth="500" prefHeight="300" minHeight="300">
+    <HBox layoutY="50" minWidth="500" minHeight="250">
+        <TableView fx:id="table" minWidth="500" minHeight="250">
             <columns>
                 <TableColumn text="title">
                     <cellValueFactory>
@@ -36,7 +37,7 @@
             </columns>
         </TableView>
     </HBox>
-    <HBox layoutY="400" minWidth="500" prefWidth="500">
-        <Label fx:id="label" minWidth="500" prefWidth="500"></Label>
+    <HBox layoutY="325" minWidth="500">
+        <Label fx:id="label" minWidth="500"></Label>
     </HBox>
 </BorderPane>

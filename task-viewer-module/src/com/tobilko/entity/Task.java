@@ -24,12 +24,4 @@ public class Task {
     public TaskType getType() { return type; }
     public void setType(TaskType type) { this.type = type; }
 
-    @Override
-    public String toString() {
-        return "Task{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", type=" + type +
-                '}';
-    }
 }

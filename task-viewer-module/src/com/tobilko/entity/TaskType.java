@@ -14,7 +14,6 @@ public enum TaskType {
     TaskType(String title) {
         this.title = title;
     }
-
     public static TaskType getByTitle(String title) {
         TaskType[] values = TaskType.values();
         for (TaskType task : values) {
