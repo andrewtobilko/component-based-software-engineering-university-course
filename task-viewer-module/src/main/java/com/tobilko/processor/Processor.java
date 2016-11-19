@@ -1,4 +1,4 @@
-package com.tobilko.stuff;
+package com.tobilko.processor;
 
 import java.util.Collections;
 import java.util.Comparator;
