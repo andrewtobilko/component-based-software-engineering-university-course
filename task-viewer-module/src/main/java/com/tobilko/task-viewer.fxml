@@ -8,7 +8,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-<BorderPane fx:controller="com.tobilko.TaskViewProvider"
+<BorderPane fx:controller="com.tobilko.ProjectController"
             xmlns:fx="http://javafx.com/fxml">
     <HBox>
         <ComboBox layoutX="10" layoutY="10" minWidth="100" fx:id="typeComboBox"></ComboBox>

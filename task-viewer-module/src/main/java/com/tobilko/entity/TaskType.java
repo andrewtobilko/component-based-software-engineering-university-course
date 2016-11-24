@@ -9,21 +9,25 @@ public enum TaskType {
 
     BUG("BUG"), FEATURE("FEATURE"), IMPROVEMENT("IMPROVEMENT");
 
-    private String title;
+    private String type;
 
-    TaskType(String title) {
-        this.title = title;
+    TaskType(String type) {
+        this.type = type;
     }
     public static TaskType getByTitle(String title) {
         TaskType[] values = TaskType.values();
         for (TaskType task : values) {
-            if (task.title.equals(title)) return task;
+            if (task.type.equals(title)) return task;
         }
         return BUG;
     }
 
-    @Override
-    public String toString() {
-        return title;
+    public String getType() { return type; }
+    public void setType(String type) {
+        this.type = type;
     }
+
+    @Override
+    public String toString() { return type; }
+
 }

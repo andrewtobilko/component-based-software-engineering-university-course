@@ -1,5 +1,6 @@
 package com.tobilko.stuff;
 
+import com.tobilko.ProjectRepository;
 import com.tobilko.entity.Project;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
@@ -17,7 +18,13 @@ import static javafx.collections.FXCollections.observableArrayList;
  * Created by Andrew Tobilko on 11/17/2016.
  *
  */
-public class TaskViewService {
+public class ProjectService {
+
+    static {
+
+    }
+
+    private ProjectRepository repository;
 
     public void fillProjects(List<Project> projects) {
         projects.add(new Project("Project 1", Arrays.asList(
