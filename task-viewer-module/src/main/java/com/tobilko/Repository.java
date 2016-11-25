@@ -1,6 +1,7 @@
 package com.tobilko;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -13,5 +14,6 @@ public interface Repository<T extends Viewable> {
     void remove(T... element);
 
     T find(Long id);
+    List<T> findAll();
 
 }

@@ -6,8 +6,11 @@ import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
 import com.tobilko.event.MyEvent;
 import com.tobilko.event.MyEventTypeProvider;
+import com.tobilko.exception.FilterParameterNotSpecified;
 import com.tobilko.stuff.ProcessingService;
 import com.tobilko.stuff.ProjectService;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -55,53 +58,26 @@ public class ProjectController implements Initializable {
         try {
             stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml")), 500, 350));
 
-            SessionFactory factory = null;
-            try {
-                factory = new Configuration()
-                        .configure("hibernate.cfg.xml")
-                        .addPackage("com.tobilko")
-                        .addAnnotatedClass(Project.class)
-                        .addAnnotatedClass(Task.class)
-                        .buildSessionFactory();
-            } catch (HibernateException e) {
-                e.printStackTrace();
-            }
-
-            Session session = factory.openSession();
-            Transaction transaction = session.beginTransaction();
-
-            Task task = new Task("t1", "d1", TaskType.BUG);
-            session.persist(task);
-
-            System.out.println("task +");
-            ArrayList<Task> list = new ArrayList<Task>() {{
-                add(task);
-            }};
-            session.persist(new Project("1", list));
-
-            System.out.println("project +");
-
-            transaction.commit();
-
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     public void configureFilterProcessing() {
-        filterButton.setOnAction(e -> {
-            if (projectComboBox.getSelectionModel().isEmpty() || typeComboBox.getSelectionModel().isEmpty()) {
-                System.out.println("COMPONENT: I'm going to fire the event!");
-                MyEvent event = new MyEvent(MyEventTypeProvider.getEventType());
-                filterButton.fireEvent(event);
+        filterButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                if (projectComboBox.getSelectionModel().isEmpty() || typeComboBox.getSelectionModel().isEmpty()) {
+                    System.out.println("COMPONENT: I'm going to fire the event!");
+                    filterButton.fireEvent(new MyEvent(MyEventTypeProvider.getEventType()));
+                    throw new FilterParameterNotSpecified("Not all filter parameters are specified!");
+                }
+
+                List<Project> projects = processingService.getProjectProcessor().filter(ProjectController.this.projects, p -> p.getTitle().equals(projectComboBox.getSelectionModel().getSelectedItem()));
+                List<Task> tasks = processingService.getTaskProcessor().filter(projects.get(0).getTasks(), t -> t.getType() == TaskType.getByTitle(typeComboBox.getSelectionModel().getSelectedItem()));
+
+                table.setItems(observableArrayList(tasks));
+
             }
-
-            List<Project> projects = processingService.getProjectProcessor().filter(this.projects, p -> p.getTitle().equals(projectComboBox.getSelectionModel().getSelectedItem()));
-            List<Task> tasks = processingService.getTaskProcessor().filter(projects.get(0).getTasks(), t -> t.getType() == TaskType.getByTitle(typeComboBox.getSelectionModel().getSelectedItem()));
-
-            table.setItems(observableArrayList(tasks));
-
         });
     }
     public void configureSortProcessing() {

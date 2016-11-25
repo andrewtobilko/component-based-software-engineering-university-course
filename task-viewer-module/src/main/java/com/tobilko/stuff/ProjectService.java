@@ -1,13 +1,15 @@
 package com.tobilko.stuff;
 
-import com.tobilko.ProjectRepository;
+import com.tobilko.ProjectNativeRepository;
+import com.tobilko.Repository;
 import com.tobilko.entity.Project;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Stream.of;
@@ -20,28 +22,23 @@ import static javafx.collections.FXCollections.observableArrayList;
  */
 public class ProjectService {
 
-    static {
+    private final static String CONFIGURATION_FILE = "hibernate.cfg.xml";
+    private final static String DEFAULT_PACKAGE = "com.tobilko";
+    private static SessionFactory factory;
 
+    static {
+        factory = new Configuration()
+                .configure(CONFIGURATION_FILE)
+                    .addPackage(DEFAULT_PACKAGE)
+                    .addAnnotatedClass(Project.class)
+                    .addAnnotatedClass(Task.class)
+                .buildSessionFactory();
     }
 
-    private ProjectRepository repository;
+    private Repository<Project> repository = new ProjectNativeRepository(factory.openSession());
 
     public void fillProjects(List<Project> projects) {
-        projects.add(new Project("Project 1", Arrays.asList(
-                new Task("title task 1.1", "description task 1.1", TaskType.IMPROVEMENT),
-                new Task("title task 1.2", "description task 1.2", TaskType.BUG),
-                new Task("title task 1.3", "description task 1.3", TaskType.FEATURE)
-        )));
-        projects.add(new Project("Project 3", Arrays.asList(
-                new Task("title task 3.1", "description task 3.1", TaskType.BUG),
-                new Task("title task 3.2", "description task 3.2", TaskType.IMPROVEMENT),
-                new Task("title task 3.3", "description task 3.3", TaskType.FEATURE)
-        )));
-        projects.add(new Project("Project 2", Arrays.asList(
-                new Task("title task 2.1", "description task 2.1", TaskType.BUG),
-                new Task("title task 2.2", "description task 2.2", TaskType.IMPROVEMENT),
-                new Task("title task 2.3", "description task 2.3", TaskType.FEATURE)
-        )));
+        repository.findAll().forEach(projects::add);
     }
     public void fillTypeComboBox(ComboBox<String> box) {
         box.setItems(observableArrayList(of(TaskType.values()).map(TaskType::toString).toArray(String[]::new)));

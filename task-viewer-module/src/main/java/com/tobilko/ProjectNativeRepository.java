@@ -5,45 +5,75 @@ import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.jdbc.Work;
 import org.hibernate.query.NativeQuery;
 
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
-import static java.util.Arrays.*;
+import static java.util.Arrays.stream;
 
 /**
  *
  * Created by Andrew Tobilko on 11/24/2016.
  *
  */
-public class ProjectRepository implements Repository<Project> {
+public class ProjectNativeRepository implements Repository<Project> {
+
+    private static final String SELECT_ALL_PROJECTS = "SELECT * FROM public.project;";
+    private static final String SELECT_PROJECT_BY_ID = "SELECT * FROM public.project WHERE id = ?;";
+    private static final String DELETE_PROJECT_BY_ID = "DELETE FROM public.project WHERE id = ?";
+    private static final String INSERT_PROJECT = "INSERT INTO public.project VALUES() ";
 
     private Session session;
 
-    public ProjectRepository(Session session) {
+    public ProjectNativeRepository(Session session) {
         this.session = session;
         fillInitialData();
     }
 
     @Override
     public void save(Project... projects) {
+        session.doWork(connection -> {
+            PreparedStatement statement = connection.prepareStatement(INSERT_PROJECT);
+            ResultSet set = statement.executeQuery();
+        });g
+/*        Arrays.stream(projects).forEach(project -> {
+            NativeQuery query = session.createNativeQuery("INSERT INTO project (id, title) VALUES(?, ?)");
+            query.setParameter(2, project.getTitle());
+            List result = query.getResultList();
+            System.out.println(result);
+        });*/
         perform(session::save, projects);
     }
 
     @Override
     public void remove(Project... projects) {
-        perform(session::remove, projects);
+        Arrays.stream(projects).forEach(project -> {
+            NativeQuery query = session.createNativeQuery(DELETE_PROJECT_BY_ID).setParameter(1, project.getId());
+            List list = query.getResultList();
+            System.out.println(list);
+        });
     }
 
     @Override
     public Project find(Long id) {
-        return session.get(Project.class, id);
+        NativeQuery<Project> query = session.createNativeQuery(SELECT_PROJECT_BY_ID, Project.class);
+        query.setParameter(1, id);
+
+        return query.getSingleResult();
     }
 
     @Override
     public List<Project> findAll() {
-        return session.createCriteria(Project.class).list();
+        return session
+                .createNativeQuery(SELECT_ALL_PROJECTS, Project.class)
+                .getResultList();
     }
 
 
