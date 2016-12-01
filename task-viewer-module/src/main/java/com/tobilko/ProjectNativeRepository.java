@@ -5,13 +5,10 @@ import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.jdbc.Work;
-import org.hibernate.query.NativeQuery;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,16 +16,13 @@ import java.util.function.Consumer;
 import static java.util.Arrays.stream;
 
 /**
- *
  * Created by Andrew Tobilko on 11/24/2016.
- *
  */
 public class ProjectNativeRepository implements Repository<Project> {
 
-    private static final String SELECT_ALL_PROJECTS = "SELECT * FROM public.project;";
-    private static final String SELECT_PROJECT_BY_ID = "SELECT * FROM public.project WHERE id = ?;";
-    private static final String DELETE_PROJECT_BY_ID = "DELETE FROM public.project WHERE id = ?";
-    private static final String INSERT_PROJECT = "INSERT INTO public.project VALUES() ";
+    private static final String SELECT_PROJECT_BY_ID = "SELECT temp.id, temp.title, task.id, task.type, task.title, task.description " +
+            "FROM (project INNER JOIN project_task ON (project.id = project_task.project_id)) as temp " +
+            "INNER JOIN task ON (task.id = temp.tasks_id) WHERE project_id = ?;";
 
     private Session session;
 
@@ -39,41 +33,36 @@ public class ProjectNativeRepository implements Repository<Project> {
 
     @Override
     public void save(Project... projects) {
-        session.doWork(connection -> {
-            PreparedStatement statement = connection.prepareStatement(INSERT_PROJECT);
-            ResultSet set = statement.executeQuery();
-        });g
-/*        Arrays.stream(projects).forEach(project -> {
-            NativeQuery query = session.createNativeQuery("INSERT INTO project (id, title) VALUES(?, ?)");
-            query.setParameter(2, project.getTitle());
-            List result = query.getResultList();
-            System.out.println(result);
-        });*/
         perform(session::save, projects);
     }
 
     @Override
     public void remove(Project... projects) {
-        Arrays.stream(projects).forEach(project -> {
-            NativeQuery query = session.createNativeQuery(DELETE_PROJECT_BY_ID).setParameter(1, project.getId());
-            List list = query.getResultList();
-            System.out.println(list);
-        });
+        perform(session::remove, projects);
     }
 
     @Override
     public Project find(Long id) {
-        NativeQuery<Project> query = session.createNativeQuery(SELECT_PROJECT_BY_ID, Project.class);
-        query.setParameter(1, id);
+        final Project result = new Project();
+        result.setTasks(new ArrayList<>());
+        session.doWork(connection -> {
+            PreparedStatement statement = connection.prepareStatement(SELECT_PROJECT_BY_ID);
+            statement.setLong(1, id);
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                result.setId(set.getLong(1));
+                result.setTitle(set.getString(2));
+                result.getTasks().add(new Task(set.getString(5), set.getString(6), TaskType.getByTitle(set.getString(4))));
+            }
 
-        return query.getSingleResult();
+        });
+        return result;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Project> findAll() {
-        return session
-                .createNativeQuery(SELECT_ALL_PROJECTS, Project.class)
-                .getResultList();
+        return session.createCriteria(Project.class).list();
     }
 
 
