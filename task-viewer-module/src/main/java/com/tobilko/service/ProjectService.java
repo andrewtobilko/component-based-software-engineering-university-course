@@ -1,41 +1,25 @@
-package com.tobilko.stuff;
+package com.tobilko.service;
 
-import com.tobilko.ProjectNativeRepository;
-import com.tobilko.Repository;
+import com.tobilko.repository.Repository;
 import com.tobilko.entity.Project;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import static java.util.stream.Stream.of;
 import static javafx.collections.FXCollections.observableArrayList;
 
-/**
- *
- * Created by Andrew Tobilko on 11/17/2016.
- *
- */
+@Component
 public class ProjectService {
 
-    private final static String CONFIGURATION_FILE = "hibernate.cfg.xml";
-    private final static String DEFAULT_PACKAGE = "com.tobilko";
-    private static SessionFactory factory;
-
-    static {
-        factory = new Configuration()
-                .configure(CONFIGURATION_FILE)
-                    .addPackage(DEFAULT_PACKAGE)
-                    .addAnnotatedClass(Project.class)
-                    .addAnnotatedClass(Task.class)
-                .buildSessionFactory();
-    }
-
-    private Repository<Project> repository = new ProjectNativeRepository(factory.openSession());
+    private Repository<Project> repository;
 
     public void fillProjects(List<Project> projects) {
         repository.findAll().forEach(projects::add);
@@ -48,6 +32,12 @@ public class ProjectService {
     }
     public void fillTable(TableView<Task> table, List<Project> projects) {
         table.setItems(observableArrayList(projects.stream().flatMap(p -> p.getTasks().stream()).toArray(Task[]::new)));
+    }
+
+    @Autowired
+    @Qualifier("nativeRepository")
+    public void setRepository(Repository<Project> repository) {
+        this.repository = repository;
     }
 
 }

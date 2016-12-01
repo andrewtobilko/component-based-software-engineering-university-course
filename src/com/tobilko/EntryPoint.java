@@ -1,5 +1,6 @@
 package com.tobilko;
 
+import com.tobilko.controller.ProjectController;
 import com.tobilko.event.MyEventTypeProvider;
 import javafx.application.Application;
 import javafx.stage.Stage;

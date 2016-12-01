@@ -1,4 +1,4 @@
-package com.tobilko;
+package com.tobilko.controller;
 
 import com.tobilko.annotation.DeveloperInformation;
 import com.tobilko.entity.Project;
@@ -7,8 +7,8 @@ import com.tobilko.entity.TaskType;
 import com.tobilko.event.MyEvent;
 import com.tobilko.event.MyEventTypeProvider;
 import com.tobilko.exception.FilterParameterNotSpecified;
-import com.tobilko.stuff.ProcessingService;
-import com.tobilko.stuff.ProjectService;
+import com.tobilko.service.ProcessingService;
+import com.tobilko.service.ProjectService;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -19,16 +19,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static java.util.stream.Collectors.toList;
@@ -42,12 +45,17 @@ import static javafx.collections.FXCollections.observableArrayList;
 @DeveloperInformation(name = "Andrew Tobilko", age = 20, position = "Java developer")
 public class ProjectController implements Initializable {
 
+    private static final ApplicationContext CONTEXT = new AnnotationConfigApplicationContext("com.tobilko");
+
+    private Stage mainStage;
+
     private @FXML Button filterButton;
     private @FXML Button sortButton;
     private @FXML ComboBox<String> typeComboBox;
     private @FXML ComboBox<String> projectComboBox;
     private @FXML TableView<Task> table;
     private @FXML Label label;
+    private @FXML ComboBox<String> languageComboBox;
 
     private List<Project> projects = new ArrayList<>();
 
@@ -56,13 +64,13 @@ public class ProjectController implements Initializable {
 
     public void configure(Stage stage) {
         try {
-            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml")), 500, 350));
-
+            mainStage = stage;
+            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml"), ResourceBundle.getBundle("com.tobilko.controller.locales.locale", Locale.ENGLISH)), 500, 350));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public void configureFilterProcessing() {
+    private void configureFilterProcessing() {
         filterButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -80,7 +88,7 @@ public class ProjectController implements Initializable {
             }
         });
     }
-    public void configureSortProcessing() {
+    private void configureSortProcessing() {
         sortButton.setOnAction(e -> {
             List<Task> allTasks = projects.stream().flatMap(p -> p.getTasks().stream()).collect(toList());
 
@@ -89,15 +97,35 @@ public class ProjectController implements Initializable {
             table.setItems(observableArrayList(allTasks));
         });
     }
+    private void configureLanguageSwitching() {
+        languageComboBox.valueProperty().addListener((value, previous, current) -> {
+            changeLanguage(current.equals("EN") ? Locale.ENGLISH : new Locale(current.toLowerCase(), current));
+        });
+    }
+
+    private void changeLanguage(Locale locale) {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setResources(ResourceBundle.getBundle("com.tobilko.controller.locales.locale", locale));
+
+        try {
+            Pane pane = (BorderPane) loader.load(this.getClass().getResource("task-viewer.fxml").openStream());
+            StackPane content = (StackPane) ((VBox) mainStage.getScene().getRoot()).getChildren().get(1);
+            content.getChildren().clear();
+            content.getChildren().add(pane);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         configureFilterProcessing();
         configureSortProcessing();
-
-        fillComponents();
+        configureLanguageSwitching();
+        //fillComponents();
         displayMetaInformation();
     }
+
     private void fillComponents() {
         service.fillProjects(projects);
         service.fillTypeComboBox(typeComboBox);

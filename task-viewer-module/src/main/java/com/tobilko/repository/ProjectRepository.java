@@ -1,28 +1,23 @@
-package com.tobilko;
+package com.tobilko.repository;
 
 import com.tobilko.entity.Project;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
-import static java.util.Arrays.*;
+import static java.util.Arrays.stream;
 
-/**
- *
- * Created by Andrew Tobilko on 11/24/2016.
- *
- */
-public class ProjectRepository implements Repository<Project> {
+@Component
+@Qualifier("repository")
+public class ProjectRepository extends Repository<Project> {
 
-    private Session session;
-
-    public ProjectRepository(Session session) {
-        this.session = session;
+    public ProjectRepository() {
         fillInitialData();
     }
 

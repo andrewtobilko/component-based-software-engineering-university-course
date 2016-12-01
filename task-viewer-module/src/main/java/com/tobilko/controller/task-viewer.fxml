@@ -1,20 +1,15 @@
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.ListView?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-<BorderPane fx:controller="com.tobilko.ProjectController"
-            xmlns:fx="http://javafx.com/fxml">
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import java.lang.String?>
+<BorderPane fx:controller="com.tobilko.controller.ProjectController" xmlns:fx="http://javafx.com/fxml">
     <HBox>
         <ComboBox layoutX="10" layoutY="10" minWidth="100" fx:id="typeComboBox"></ComboBox>
         <ComboBox layoutX="10" layoutY="100" minWidth="100" fx:id="projectComboBox"></ComboBox>
-        <Button fx:id="filterButton" minWidth="150" text="Filter!"></Button>
-        <Button fx:id="sortButton" minWidth="150" text="Sort by task title!"></Button>
+        <Button fx:id="filterButton" minWidth="150" text="%filter"></Button>
+        <Button fx:id="sortButton" minWidth="150" text="%sort"></Button>
     </HBox>
     <HBox layoutY="50" minWidth="500" minHeight="250">
         <TableView fx:id="table" minWidth="500" minHeight="250">
@@ -38,6 +33,14 @@
         </TableView>
     </HBox>
     <HBox layoutY="325" minWidth="500">
-        <Label fx:id="label" minWidth="500"></Label>
+        <Label fx:id="label" minWidth="300"></Label>
+        <ComboBox fx:id="languageComboBox" minWidth="150">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="EN"/>
+                    <String fx:value="UA"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
     </HBox>
 </BorderPane>

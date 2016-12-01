@@ -1,10 +1,11 @@
-package com.tobilko;
+package com.tobilko.repository;
 
 import com.tobilko.entity.Project;
 import com.tobilko.entity.Task;
 import com.tobilko.entity.TaskType;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,19 +16,15 @@ import java.util.function.Consumer;
 
 import static java.util.Arrays.stream;
 
-/**
- * Created by Andrew Tobilko on 11/24/2016.
- */
-public class ProjectNativeRepository implements Repository<Project> {
+@Component
+@Qualifier("nativeRepository")
+public class ProjectNativeRepository extends Repository<Project> {
 
     private static final String SELECT_PROJECT_BY_ID = "SELECT temp.id, temp.title, task.id, task.type, task.title, task.description " +
-            "FROM (project INNER JOIN project_task ON (project.id = project_task.project_id)) as temp " +
-            "INNER JOIN task ON (task.id = temp.tasks_id) WHERE project_id = ?;";
+                                                       "FROM (project INNER JOIN project_task ON (project.id = project_task.project_id)) as temp " +
+                                                       "INNER JOIN task ON (task.id = temp.tasks_id) WHERE project_id = ?;";
 
-    private Session session;
-
-    public ProjectNativeRepository(Session session) {
-        this.session = session;
+    public ProjectNativeRepository() {
         fillInitialData();
     }
 
@@ -54,7 +51,6 @@ public class ProjectNativeRepository implements Repository<Project> {
                 result.setTitle(set.getString(2));
                 result.getTasks().add(new Task(set.getString(5), set.getString(6), TaskType.getByTitle(set.getString(4))));
             }
-
         });
         return result;
     }
