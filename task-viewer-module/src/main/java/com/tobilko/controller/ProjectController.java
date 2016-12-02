@@ -9,16 +9,15 @@ import com.tobilko.event.MyEventTypeProvider;
 import com.tobilko.exception.FilterParameterNotSpecified;
 import com.tobilko.service.ProcessingService;
 import com.tobilko.service.ProjectService;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -26,13 +25,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.net.URLConnection;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static javafx.collections.FXCollections.observableArrayList;
@@ -47,7 +48,7 @@ public class ProjectController implements Initializable {
 
     private static final ApplicationContext CONTEXT = new AnnotationConfigApplicationContext("com.tobilko");
 
-    private Stage mainStage;
+    private static Stage mainStage;
 
     private @FXML Button filterButton;
     private @FXML Button sortButton;
@@ -63,9 +64,10 @@ public class ProjectController implements Initializable {
     private ProcessingService processingService = new ProcessingService();
 
     public void configure(Stage stage) {
+        System.out.println(stage);
         try {
             mainStage = stage;
-            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml"), ResourceBundle.getBundle("com.tobilko.controller.locales.locale", Locale.ENGLISH)), 500, 350));
+            mainStage.setScene(new Scene(FXMLLoader.load(getClass().getResource("task-viewer.fxml"), ResourceBundle.getBundle("com.tobilko.controller.locales.locale", Locale.ENGLISH)), 500, 350));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -99,22 +101,20 @@ public class ProjectController implements Initializable {
     }
     private void configureLanguageSwitching() {
         languageComboBox.valueProperty().addListener((value, previous, current) -> {
-            changeLanguage(current.equals("EN") ? Locale.ENGLISH : new Locale(current.toLowerCase(), current));
+            ResourceBundle bundle = changeLanguage(current.equals("EN") ? Locale.ENGLISH : new Locale(current.toLowerCase(), current));
         });
     }
 
-    private void changeLanguage(Locale locale) {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setResources(ResourceBundle.getBundle("com.tobilko.controller.locales.locale", locale));
-
+    private ResourceBundle changeLanguage(Locale locale) {
         try {
-            Pane pane = (BorderPane) loader.load(this.getClass().getResource("task-viewer.fxml").openStream());
-            StackPane content = (StackPane) ((VBox) mainStage.getScene().getRoot()).getChildren().get(1);
-            content.getChildren().clear();
-            content.getChildren().add(pane);
+            ResourceBundle bundle = ResourceBundle.getBundle("com.tobilko.controller.locales.locale", locale);
+            URL resource = getClass().getResource("task-viewer.fxml");
+            mainStage.setScene(new Scene(FXMLLoader.load(resource, bundle), 500, 350));
+            return bundle;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
