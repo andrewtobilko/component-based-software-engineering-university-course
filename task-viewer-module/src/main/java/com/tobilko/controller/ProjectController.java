@@ -9,40 +9,30 @@ import com.tobilko.event.MyEventTypeProvider;
 import com.tobilko.exception.FilterParameterNotSpecified;
 import com.tobilko.service.ProcessingService;
 import com.tobilko.service.ProjectService;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static java.util.stream.Collectors.toList;
 import static javafx.collections.FXCollections.observableArrayList;
 
-/**
- *
- * Created by Andrew Tobilko on 11/16/2016.
- *
- */
 @DeveloperInformation(name = "Andrew Tobilko", age = 20, position = "Java developer")
 public class ProjectController implements Initializable {
 
@@ -72,6 +62,7 @@ public class ProjectController implements Initializable {
             e.printStackTrace();
         }
     }
+
     private void configureFilterProcessing() {
         filterButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -90,6 +81,7 @@ public class ProjectController implements Initializable {
             }
         });
     }
+
     private void configureSortProcessing() {
         sortButton.setOnAction(e -> {
             List<Task> allTasks = projects.stream().flatMap(p -> p.getTasks().stream()).collect(toList());
@@ -99,6 +91,7 @@ public class ProjectController implements Initializable {
             table.setItems(observableArrayList(allTasks));
         });
     }
+
     private void configureLanguageSwitching() {
         languageComboBox.valueProperty().addListener((value, previous, current) -> {
             ResourceBundle bundle = changeLanguage(current.equals("EN") ? Locale.ENGLISH : new Locale(current.toLowerCase(), current));
@@ -132,6 +125,7 @@ public class ProjectController implements Initializable {
         service.fillProjectComboBox(projectComboBox, projects);
         service.fillTable(table, projects);
     }
+
     private void displayMetaInformation() {
         Class<ProjectController> clazz = ProjectController.class;
         if (clazz.isAnnotationPresent(DeveloperInformation.class)) {

@@ -16,17 +16,17 @@
             <columns>
                 <TableColumn text="title">
                     <cellValueFactory>
-                        <PropertyValueFactory property="title" />
+                        <PropertyValueFactory property="title"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn text="description">
                     <cellValueFactory>
-                        <PropertyValueFactory property="description" />
+                        <PropertyValueFactory property="description"/>
                     </cellValueFactory>
                 </TableColumn>
                 <TableColumn text="type">
                     <cellValueFactory>
-                        <PropertyValueFactory property="type" />
+                        <PropertyValueFactory property="type"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>

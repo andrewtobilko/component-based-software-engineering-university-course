@@ -21,8 +21,8 @@ import static java.util.Arrays.stream;
 public class ProjectNativeRepository extends Repository<Project> {
 
     private static final String SELECT_PROJECT_BY_ID = "SELECT temp.id, temp.title, task.id, task.type, task.title, task.description " +
-                                                       "FROM (project INNER JOIN project_task ON (project.id = project_task.project_id)) as temp " +
-                                                       "INNER JOIN task ON (task.id = temp.tasks_id) WHERE project_id = ?;";
+            "FROM (project INNER JOIN project_task ON (project.id = project_task.project_id)) as temp " +
+            "INNER JOIN task ON (task.id = temp.tasks_id) WHERE project_id = ?;";
 
     public ProjectNativeRepository() {
         fillInitialData();

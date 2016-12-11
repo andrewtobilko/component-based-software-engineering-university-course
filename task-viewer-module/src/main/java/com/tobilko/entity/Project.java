@@ -2,15 +2,13 @@ package com.tobilko.entity;
 
 import com.tobilko.Viewable;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * Created by Andrew Tobilko on 11/16/2016.
- *
- */
 @Entity
 public class Project implements Viewable {
 

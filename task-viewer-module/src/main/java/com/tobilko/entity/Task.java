@@ -5,9 +5,7 @@ import com.tobilko.Viewable;
 import javax.persistence.*;
 
 /**
- *
  * Created by Andrew Tobilko on 11/16/2016.
- *
  */
 @Entity
 public class Task implements Viewable {
